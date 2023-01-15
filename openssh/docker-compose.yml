@@ -1,0 +1,26 @@
+version: "2.1"
+services:
+  openssh-server:
+    image: linuxserver/openssh-server
+    container_name: openssh-server
+    hostname: openssh-server #optional
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - PUBLIC_KEY=ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDsYfdvC73x9yP3scsXC1sd+7w9BM2DsV+begz31ewa2sf6YmLurjDiXNYIy2eFDCQel67xsLvQ+x/kHdVttvNvFGwldogayLfeUEaahm6rZErwSf4nzHylxLbEQhA05dGMTrrRO5Jhi9nQybgq4Q4oiy899a2MDkX+nF1PXTV0qlZpTSabPAyD8eMN/x3CgmZ63s1pBDRTCLJYao+jmPi0tsYfBNBut3clx461GNJmq2/m06yQpt/TnOLZx/2rp1DFHEgtRDcntRDqeg3Mn2PC5lmnNCiuzv7l0Oi/BClUpbE9lyoJF3wdE9q+gTJWHr1nI+LWI1quBVj66UajYsJ18AUo2SSnpHfFaIJzpWmH3uofdtOtJAaa4OOq5eDo4kWx5CatG8JVQdZ8h5YrAXkkb7ybV3N92Abz2ggpyaxs697O6Z+xZiNG93i/knTqJiRWIyliy4OKuuuJrztatDOiqgVbFirRx0x200oPqozZqcY8sS/RNoGTWU2dE2NKWPc= student@ubuntu
+      - PUBLIC_KEY_FILE=/path/to/file #optional
+      - SUDO_ACCESS=true #optional
+      - PASSWORD_ACCESS=true #optional
+      - USER_PASSWORD=password #optional
+      - USER_PASSWORD_FILE=/path/to/file #optional
+      - USER_NAME=student #optional
+    #volumes:
+    #  - /path/to/appdata/config:/config
+    ports:
+      - 2222:2222
+    restart: unless-stopped
+networks:
+  default:
+    name: lab-net
+    external: true

@@ -1,0 +1,40 @@
+version: '2'
+services:
+  mail:
+    image: tvial/docker-mailserver:latest
+    hostname: ${HOSTNAME}
+    domainname: ${DOMAINNAME}
+    container_name: ${CONTAINER_NAME}
+    ports:
+    - "25:25"
+    - "143:143"
+    - "587:587"
+    - "993:993"
+    expose: 
+    - 25/tcp
+    - 143/tcp
+    - 587/tcp
+    - 993/tcp
+    volumes:
+    - maildata:/var/mail
+    - mailstate:/var/mail-state
+    - maillogs:/var/log/mail
+    - ./config/:/tmp/docker-mailserver/
+    env_file:
+    - .env
+    - env-mailserver
+    cap_add:
+    - NET_ADMIN
+    - SYS_PTRACE
+    restart: always
+volumes:
+  maildata:
+    driver: local
+  mailstate:
+    driver: local
+  maillogs:
+    driver: local
+networks:
+  default:
+      name: lab-net
+      external: true
