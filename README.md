@@ -1,0 +1,2 @@
+# Security-Learning-Hub
+Docker-based local lab with network and web application vulnerabilities, aiming to teach students on how to identify and exploit known security vulnerabilities and misconfigurations
