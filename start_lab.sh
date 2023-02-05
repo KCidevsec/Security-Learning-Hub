@@ -5,7 +5,7 @@ start_services(){
     sudo service docker start
 }
 
-set_variables(){
+set_global_variables(){
     #global variables
     echo "--------------------------------------------------------------------------------"
     echo "                         Setting Enviromental Variables"
@@ -13,10 +13,17 @@ set_variables(){
     _architecture="$(uname -p)"
     _user="$(id -u -n)"
     root_path=$(pwd)$(echo /)
-    kalilinux_folder="kali-linux/"
-    centos1_folder="centos1"
     number_of_images=$(sudo docker images | tee >(wc -l) | tail -1)
     max_number_of_images="35"
+}
+
+set_container_images_paths(){
+    #global variables
+    echo "--------------------------------------------------------------------------------"
+    echo "                         Setting Contaier Image's Paths"
+    echo "--------------------------------------------------------------------------------"
+    kalilinux_folder="kali-linux/"
+    centos1_folder="centos1"
     vulhub_path="vulhub/"
     flask_ssti_path="flask/ssti"
     activemq_2015_path="activemq/CVE-2015-5254"
@@ -67,24 +74,8 @@ build_images(){
     echo "--------------------------------------------------------------------------------"
     cd $root_path$kalilinux_folder && sudo docker build -t my-kali .
     cd $root_path$centos1_folder && sudo docker build -t my-centos1 .
-    #cd $root_path$vulhub_path$flask_ssti_path && sudo docker compose build
-    #cd $root_path$vulhub_path$activemq_2015_path && sudo docker compose build
-    #cd $root_path$vulhub_path$activemq_2016_path && sudo docker compose build
-    #cd $root_path$vulhub_path$apero_rce_path && sudo docker compose build
-    #cd $root_path$vulhub_path$appweb_2018_path && sudo docker compose build
-    #cd $root_path$vulhub_path$aria2_rce_path && sudo docker compose build
-    #cd $root_path$vulhub_path$bash_shellshock_path && sudo docker compose build
-    #cd $root_path$vulhub_path$coldfusion_2010_path && sudo docker compose build
-    #cd $root_path$vulhub_path$couchdb_2017_path && sudo docker compose build
-    #cd $root_path$vulhub_path$oracle_sql_injection_2020_path && sudo docker compose build
-    #cd $root_path$vulhub_path$dns_zone_transf_path && sudo docker compose build
-    #cd $root_path$vulhub_path$mysql_path && sudo docker compose build
-    #cd $root_path$vulhub_path$samba_path && sudo docker compose build
     cd $root_path$proftpd_path && docker buildx build --platform=linux/amd64 -t proftp .
-    #cd $root_path$proftpd_path && sudo docker build -t "vuln/cve-2015-3306" .
     cd $root_path$ftp_anon && sudo docker buildx build --platform=linux/amd64 -t docker-anon-ftp .
-    #cd $root_path$openssh_server && sudo docker compose build
-    #cd $root_path$smtp_server && sudo docker compose build
 }
 
 create_interfaces(){
@@ -360,9 +351,9 @@ menu() {
                                           |_|   |_|\____|____/                                                                                                                                      
         "
         echo "      Author: Kyriakos Costa"
-        echo "      Date: 20 August 2022"
+        echo "      Date: 22 January 2023"
         echo "      Version 6.0"
-        echo "      Contact: costa.k@unic.ac.cy"
+        echo "      Contact: kyriakoskosta@outlook.com"
         echo ""
         echo ""
         echo "    	0  -  Exit"
