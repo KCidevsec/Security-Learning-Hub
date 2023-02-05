@@ -4,12 +4,14 @@
 export root_path=$(pwd)$(echo /)
 export cur_user="$(id -u -n)"
 export os_architecture="$(uname -p)"
+export os_system="$(uname -s)"
 
 #Local Variables
 container_dockerfile_directory="container_images/docker_files/"
 container_dockercompose_directory="container-images/docker_compose/"
 scripts_directory="scripts/"
 setup_script="setup.sh"
+build_image_script="build_container_images.sh"
 centos1=$root_path$container_dockerfile_directory"centos1/"
 ftp_anon=$root_path$container_dockerfile_directory"ftp_anon/"
 kali_linux=$root_path$container_dockerfile_directory"kali_linux/"
@@ -39,6 +41,22 @@ tomcat_CVE_2020_1938=$root_path$container_dockercompose_directory"tomcat-CVE-202
 weblogic_ssrf=$root_path$container_dockercompose_directory"weblogic-ssrf/"
 
 #Include Scripts
-source $root_path$scripts_directory"setup.sh"
+source $root_path$scripts_directory$setup_script
+source $root_path$scripts_directory$build_image_script
 
-echo $coldfusion_CVE_2010_2861
+start_services(){
+    if [[ "$os_system" = "Darwin" ]]
+    then
+        open -a Docker
+    elif [[ "$os_system" = "Linux" ]]
+    then
+        sudo service docker start
+    else
+        echo "Unsupported OS System"
+    fi
+}
+
+start_services
+
+echo $centos1
+build_image_from_dockerfile $centos1
