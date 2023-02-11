@@ -56,7 +56,14 @@ start_services(){
     fi
 }
 
+build_images_with_docker_file(){
+    dockerfile_list=($centos1 $ftp_anon $kali_linux $proftpd)
+    for dockerfile_list_item in ${dockerfile_list[@]}; do
+        build_image_from_dockerfile $dockerfile_list_item
+    done
+}
+
 start_services
 
-echo $centos1
-build_image_from_dockerfile $centos1
+build_images_with_docker_file
+
