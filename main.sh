@@ -56,6 +56,13 @@ start_services(){
     fi
 }
 
+pull_base_images(){
+    base_images_list=("centos:7" "metabrainz/base-image:latest" "kalilinux/kali-rolling:latest" "debian:jessie")
+    for base_image_list_item in ${base_images_list[@]}; do
+        docker pull $base_image_list_item
+    done
+}
+
 build_images_with_docker_file(){
     dockerfile_list=($centos1 $ftp_anon $kali_linux $proftpd)
     for dockerfile_list_item in ${dockerfile_list[@]}; do
@@ -63,7 +70,7 @@ build_images_with_docker_file(){
     done
 }
 
-start_services
-
+#start_services
+pull_base_images
 build_images_with_docker_file
 

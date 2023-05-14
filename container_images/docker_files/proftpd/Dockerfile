@@ -7,7 +7,7 @@ LABEL Email=kyriakoskosta@gmai.com
 RUN apt-get update && \
     apt-get upgrade -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    wget apache2 gcc php5 make nano net-tools\
+    wget apache2 gcc php5 make nano net-tools \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 #RUN add-apt-repository ppa:ondrej/php && \
