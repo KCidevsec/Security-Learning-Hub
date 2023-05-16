@@ -57,7 +57,7 @@ start_services(){
 }
 
 pull_base_images(){
-    base_images_list=("centos:7" "metabrainz/base-image:latest" "kalilinux/kali-rolling:latest" "debian:jessie")
+    base_images_list=("centos:7" "metabrainz/base-image:latest" "kalilinux/kali-rolling:latest" "ubuntu:14.04")
     for base_image_list_item in ${base_images_list[@]}; do
         docker pull $base_image_list_item
     done
