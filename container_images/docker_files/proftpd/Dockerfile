@@ -1,18 +1,27 @@
-FROM debian:jessie
+FROM ubuntu:14.04
 
 LABEL Author=Kyriakos_Costa 
 LABEL Email=kyriakoskosta@gmai.com
 
-# install debian stuff
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    wget apache2 gcc php5 make nano net-tools \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+ARG DEBIAN_FRONTEND=noninteractive
 
-#RUN add-apt-repository ppa:ondrej/php && \
-#    apt-get update && \
-#    apt-get install php5
+#php5 dependancies and repo
+RUN apt update && \
+    apt upgrade -y && \
+    apt install -y gnupg2 ca-certificates
+
+RUN apt purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
+
+#RUN add-apt-repository ppa:ondrej/php
+RUN echo "deb https://ppa.launchpadcontent.net/ondrej/php/ubuntu focal main" >> /etc/apt/sources.list
+RUN echo "#deb-src https://ppa.launchpadcontent.net/ondrej/php/ubuntu focal main" >> /etc/apt/sources.list
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4f4ea0aae5267a6c 
+
+# install debian stuff
+RUN apt update && \
+    apt upgrade -y && \
+    apt install -y wget apache2 php5 gcc make nano net-tools && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # configure vuln application
 RUN wget ftp://ftp.proftpd.org/distrib/source/proftpd-1.3.5.tar.gz && \
