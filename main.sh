@@ -14,6 +14,7 @@ scripts_directory="scripts/"
 setup_script="setup.sh"
 build_image_script="build_container_images.sh"
 cleanup_script="cleanup.sh"
+labels_script="labels.sh"
 #images with Dockerfile
 centos1=$root_path$container_dockerfile_directory"centos1/"
 ftp_anon=$root_path$container_dockerfile_directory"ftp_anon/"
@@ -48,6 +49,7 @@ weblogic_ssrf=$root_path$container_dockercompose_directory"weblogic-ssrf/"
 source $root_path$scripts_directory$setup_script
 source $root_path$scripts_directory$build_image_script
 source $root_path$scripts_directory$cleanup_script
+source $root_path$scripts_directory$labels_script
 
 start_services(){
     if [[ "$os_system" = "Darwin" ]]
@@ -64,7 +66,17 @@ start_services(){
 pull_base_images(){
     base_images_list=("centos:7" "metabrainz/base-image:latest" "kalilinux/kali-rolling:latest" "ubuntu:14.04")
     for base_image_list_item in ${base_images_list[@]}; do
-        docker pull $base_image_list_item
+    {
+        if [[ -z "$(docker images | awk '{print $1":"$2}' | grep $base_image_list_item)" ]]
+        then
+        {
+            echo "Pulling $base_image_list_item"
+            docker pull $base_image_list_item
+        }
+        else
+            echo "Image $base_image_list_item FOUND!"
+        fi
+    }
     done
 }
 
@@ -80,7 +92,9 @@ option_1(){
 }
 
 option_2(){
-    echo "Not done yet"
+    label_center "START - PULLING BASE IMAGES"
+    pull_base_images
+    label_center "END - PULLING BASE IMAGES"
 }
 
 option_3(){
@@ -119,7 +133,7 @@ menu() {
         echo "      Contact: kyriakoskosta@outlook.com"
         echo ""
         echo ""
-        echo "    	1  -  Exit"
+        echo "    	1  -  About Security Leaning Hub"
         echo "    	2  -  Network Security Lab"
         echo "    	3  -  Web Application Security Lab"
         echo "    	4  -  Email Security Lab"
@@ -130,19 +144,19 @@ menu() {
         read selection
         echo ""
         case $selection in
-            0 ) echo "Exiting UNic Security Hub"; exit ;;
             1 ) option_1 ; exit ;;
             2 ) option_2 ; exit ;;
             3 ) option_3 ; exit ;;
             4 ) option_4 ; exit ;;
             5 ) option_5 ; exit ;;
+            6 ) echo "Exiting UNic Security Hub"; exit ;;
             * ) ;;
         esac
     done
 }
 
 #start_services
-#pull_base_images
+
 #build_images_with_docker_file
 
 menu
