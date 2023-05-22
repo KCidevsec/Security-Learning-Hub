@@ -6,16 +6,20 @@ export cur_user="$(id -u -n)"
 export os_architecture="$(uname -p)"
 export os_system="$(uname -s)"
 
-#Local Variables
+#Directories
 container_dockerfile_directory="container_images/docker_files/"
 container_dockercompose_directory="container-images/docker_compose/"
 scripts_directory="scripts/"
+#scripts
 setup_script="setup.sh"
 build_image_script="build_container_images.sh"
+cleanup_script="cleanup.sh"
+#images with Dockerfile
 centos1=$root_path$container_dockerfile_directory"centos1/"
 ftp_anon=$root_path$container_dockerfile_directory"ftp_anon/"
 kali_linux=$root_path$container_dockerfile_directory"kali_linux/"
 proftpd=$root_path$container_dockerfile_directory"proftpd/"
+#images with docker compose
 activemq_CVE_2015_5254=$root_path$container_dockercompose_directory"activemq-CVE-2015-5254/"
 activemq_CVE_2016_3088=$root_path$container_dockercompose_directory"activemq-CVE-2016-3088/"
 airflow_CVE_2020_11978=$root_path$container_dockercompose_directory"airflow-CVE-2020-11978/"
@@ -43,6 +47,7 @@ weblogic_ssrf=$root_path$container_dockercompose_directory"weblogic-ssrf/"
 #Include Scripts
 source $root_path$scripts_directory$setup_script
 source $root_path$scripts_directory$build_image_script
+source $root_path$scripts_directory$cleanup_script
 
 start_services(){
     if [[ "$os_system" = "Darwin" ]]
@@ -70,7 +75,74 @@ build_images_with_docker_file(){
     done
 }
 
-#start_services
-pull_base_images
-build_images_with_docker_file
+option_1(){
+    echo "Not done yet"
+}
 
+option_2(){
+    echo "Not done yet"
+}
+
+option_3(){
+    echo "Not done yet"
+}
+
+option_4(){
+    echo "Not done yet"
+}
+
+option_5(){
+    echo "Not done yet"
+}
+
+menu() {
+    until [ "$selection" = "0" ]; do
+        clear
+        echo "
+        
+            _                           _               _                             _               
+           | |                         (_)_            | |                           (_)              
+            \ \   ____ ____ _   _  ____ _| |_ _   _ ___| |      ____ ____  ____ ____  _ ____   ____   
+             \ \ / _  ) ___) | | |/ ___) |  _) | | (___) |     / _  ) _  |/ ___)  _ \| |  _ \ / _  |  
+         _____) | (/ ( (___| |_| | |   | | |_| |_| |   | |____( (/ ( ( | | |   | | | | | | | ( ( | |  
+        (______/ \____)____)\____|_|   |_|\___)__  |   |_______)____)_||_|_|   |_| |_|_|_| |_|\_|| |  
+                                           _ (____/      _                                   (_____|  
+                                          | |   | |     | |                                           
+                                          | |__ | |_   _| | _                                         
+                                          |  __)| | | | | || \                                        
+                                          | |   | | |_| | |_) )                                       
+                                          |_|   |_|\____|____/                                                                                                                                      
+        "
+        echo "      Author: Kyriakos Costa"
+        echo "      Date: 22 January 2023"
+        echo "      Version 6.0"
+        echo "      Contact: kyriakoskosta@outlook.com"
+        echo ""
+        echo ""
+        echo "    	1  -  Exit"
+        echo "    	2  -  Network Security Lab"
+        echo "    	3  -  Web Application Security Lab"
+        echo "    	4  -  Email Security Lab"
+        echo "    	5  -  Cleanup All Enviroments and Remove Installations"
+        echo "    	6  -  Exit Security Learning Hub"
+        echo ""
+        echo -n "  Enter selection: "
+        read selection
+        echo ""
+        case $selection in
+            0 ) echo "Exiting UNic Security Hub"; exit ;;
+            1 ) option_1 ; exit ;;
+            2 ) option_2 ; exit ;;
+            3 ) option_3 ; exit ;;
+            4 ) option_4 ; exit ;;
+            5 ) option_5 ; exit ;;
+            * ) ;;
+        esac
+    done
+}
+
+#start_services
+#pull_base_images
+#build_images_with_docker_file
+
+menu
