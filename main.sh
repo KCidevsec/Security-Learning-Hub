@@ -5,24 +5,10 @@ root_path=$(pwd)$(echo /)
 cur_user="$(id -u -n)"
 os_architecture="$(uname -p)"
 os_system="$(uname -s)"
-images=$(sudo docker images | tee >(wc -l) | tail -0)
-number_of_images=$(echo $images | tr -d ' ')
+number_of_images=$(sudo docker images | awk 'END { print NR }')
 max_number_of_images="30"
 running_docker_instance=$(sudo docker ps -aq)
-
-#directory
-scripts_directory="scripts/"
-container_dockerfile_directory="container_images/docker_files/"
-container_dockercompose_directory="container-images/docker_compose/"
-
-#scripts
-setup_script="setup.sh"
-
-#Include Scripts
-source $root_path$scripts_directory$setup_script
-source $root_path$scripts_directory$build_image_script
-source $root_path$scripts_directory$cleanup_script
-source $root_path$scripts_directory$labels_script
+network_interface="lab-net"
 
 #images with Dockerfile
 centos1=$root_path$container_dockerfile_directory"centos1/"
@@ -58,6 +44,13 @@ weblogic_ssrf=$root_path$container_dockercompose_directory"weblogic-ssrf/"
 #lists
 base_images_list=("centos:7" "metabrainz/base-image:latest" "kalilinux/kali-rolling:latest" "ubuntu:14.04")
 dockerfile_list=($centos1 $ftp_anon $kali_linux $proftpd)
+dockercompose_list=($activemq_CVE_2015_5254 $activemq_CVE_2016_3088 $airflow_CVE_2020_11978 $airflow_CVE_2020_11981 
+                    $airflow_CVE_2020_17526 $appweb_CVE_2018_8715 $aria2_rce $coldfusion_CVE_2010_2861
+                    $couchdb_CVE_2017_12635 $couchdb_CVE_2022_24706 $dns_zone_transfer $docker_smtp
+                    $flask_ssti $log4j_CVE_2021_44228 $mongo_express_CVE_2019_10758 $mysql_CVE_2012_2122
+                    $mysql_CVE_2012_2122 $openssh $redis_rce_master_slave $samba_CVE_2017_7494
+                    $shellshock_CVE_2014_6271 $ssh_CVE_2018_15473 $ssh_CVE_2018_15473 $tomcat_CVE_2020_1938
+                    $weblogic_ssrf)
 
 start_services(){
     if [[ "$os_system" = "Darwin" ]]
@@ -121,6 +114,21 @@ label_center()
     echo ""
 }
 
+build_docker_network(){
+    lab_net_exist="$(sudo docker network ls | grep $network_interface)"
+    if [[ ! -z "$lab_net_exist" ]]; then
+    {
+        sudo docker network rm $network_interface
+        sudo docker network create --driver bridge $network_interface
+    }
+    else
+    {
+        sudo docker network create --driver bridge $network_interface
+    }
+    fi
+    
+}
+
 check_for_null_variables(){
     if [ -z "$1" ]; then
     {
@@ -179,43 +187,106 @@ build_images_with_docker_file(){
     done
 }
 
-clear_previous_runs(){
-    echo "fresh(): \$0 is $0"
-    echo "fresh(): \$1 is $1"
-    echo "fresh(): \$2 is $2"
-    echo "fresh(): total args passed to me $#"
-    echo "fresh(): all args (\$@) passed to me -\"$@\""
-    echo "fresh(): all args (\$*) passed to me -\"$*\""
+build_and_run_images_with_docker_compose(){
+    for docker_compose_list_item in ${dockercompose_list[@]}; do
+    {
+        cd $docker_compose_list_item && sudo docker compose up -d
+    }
+    done
+}
+
+run_images_with_docker_file(){
+    sudo docker run -d \
+        --privileged \
+        --name centos1 \
+        --network $network_interface \
+        centos1
+    
+    sudo docker run -d \
+        --privileged \
+        --name ftp-anon \
+        --network $network_interface \
+        --publish 20-21/tcp \
+        --publish 65500-65515/tcp \
+        --volume "$ftp_anon"/mount_partition:/var/ftp:ro \
+        ftp-anon
+    
+    sudo docker run -d \
+        --privileged \
+        --name proftpd_1_3_5 \
+        --network $network_interface \
+        --publish 21/tcp \
+        --publish 80/tcp \
+        proftp
+}
+
+get_lab_info_on_running_instances()
+{
+    sudo docker inspect lab-net | grep -C3 "IPv4Address"
+}
+
+start_kali_with_interactive_shell(){
+    sudo docker run -it \
+        --name kalilinux 
+        --network $network_interface \
+        -v "$kali_linux"kali_share_folder:/root/kali_share_folder \
+        my-kali /bin/bash
+}
+
+run_images()
+{
+    run_images_with_docker_file
+    build_and_run_images_with_docker_compose
+    get_lab_info_on_running_instances
+    start_kali_with_interactive_shell
+}
+
+check_current_build(){
+    echo "Need to check current build somehow"
+}
+
+clean_up_everything(){
     #clear previous runs
-    if [ -z "$3" ]
+    if [ -z "$running_docker_instance" ]
     then
     {
         while IFS= read -r line; do
             sudo docker stop $line
             echo "Stoping container with id $line"
-        done <<< "$3"
+        done <<< "$running_docker_instance"
     }
     fi
     #$number_of_images > $max_number_of_images 
-    if [ "$1" -ge "$2" ]; then
-        echo "Maximum number of image found. Clearing OS"
+    if [ "$number_of_images" -gt "0" ]; then
+    {
+        sudo docker image prune -a -f
+        sudo docker volume prune -f
+        sudo docker system prune --volumes
         sudo docker rmi $(sudo docker images -q)
-    else
-        echo "Number of allowed images $1/$2"
+    }
     fi
 }
 
 option_1(){
-    label_center "START - PULLING BASE IMAGES"
-    pull_base_images
-    label_center "END - PULLING BASE IMAGES"
-    label_center "START - BUILDING CONTAINERS"
-    build_images_with_docker_file
-    label_center "END - BUILDING CONTAINERS"
+    echo "Not done yet"
 }
 
 option_2(){
-    lecho "Not done yet"
+    label_center "START - CHECKING CURRENT BUILD"
+    check_current_build
+    label_center "END - CHECKING CURRENT BUILD"
+    label_center "START - CREATING DOCKER NETWORKING COMPONENTS"
+    build_docker_network
+    label_center "END - CREATING DOCKER NETWORKING COMPONENTS"
+    label_center "START - PULLING BASE IMAGES"
+    pull_base_images
+    label_center "END - PULLING BASE IMAGES"
+    label_center "START - BUILDING CONTAINERS WITH DOCKER FILES"
+    build_images_with_docker_file
+    label_center "END - BUILDING CONTAINERS WITH DOCKER FILES"
+    label_center "START - ADDING IMAGES TO THE ENVIROMENT"
+    run_images
+    label_center "END - ADDING IMAGES TO THE ENVIROMENT"
 }
 
 option_3(){
@@ -228,8 +299,7 @@ option_4(){
 
 option_5(){
     label_center "START - CLEARING DOCKER ENVIROMENT"
-    echo "The number of images are $number_of_images"
-    clear_previous_runs $number_of_images $max_number_of_images $running_docker_instance
+    clean_up_everything $number_of_images $max_number_of_images $running_docker_instance
     label_center "END - CLEARING DOCKER ENVIROMENT"
 }
 
@@ -257,7 +327,7 @@ menu() {
         echo "      Contact: kyriakoskosta@outlook.com"
         echo ""
         echo ""
-        echo "    	1  -  Setup Enviroment"
+        echo "    	1  -  About"
         echo "    	2  -  Network Security Lab"
         echo "    	3  -  Web Application Security Lab"
         echo "    	4  -  Email Security Lab"
@@ -273,7 +343,7 @@ menu() {
             3 ) option_3 ; exit ;;
             4 ) option_4 ; exit ;;
             5 ) option_5 ; exit ;;
-            6 ) echo "Exiting UNic Security Hub"; exit ;;
+            6 ) echo "Exiting Security Learning Hub"; exit ;;
             * ) ;;
         esac
     done
