@@ -10,6 +10,10 @@ max_number_of_images="30"
 running_docker_instance=$(sudo docker ps -aq)
 network_interface="lab-net"
 
+#directories
+container_dockerfile_directory="container_images/docker_files/"
+container_dockercompose_directory="container_images/docker_compose/"
+
 #images with Dockerfile
 centos1=$root_path$container_dockerfile_directory"centos1/"
 ftp_anon=$root_path$container_dockerfile_directory"ftp_anon/"
@@ -209,7 +213,7 @@ run_images_with_docker_file(){
         --publish 20-21/tcp \
         --publish 65500-65515/tcp \
         --volume "$ftp_anon"/mount_partition:/var/ftp:ro \
-        ftp-anon
+        ftp_anon
     
     sudo docker run -d \
         --privileged \
@@ -230,7 +234,7 @@ start_kali_with_interactive_shell(){
         --name kalilinux 
         --network $network_interface \
         -v "$kali_linux"kali_share_folder:/root/kali_share_folder \
-        my-kali /bin/bash
+        kali_linux /bin/bash
 }
 
 run_images()
@@ -276,16 +280,16 @@ option_2(){
     check_current_build
     label_center "END - CHECKING CURRENT BUILD"
     label_center "START - CREATING DOCKER NETWORKING COMPONENTS"
-    build_docker_network
+    #build_docker_network
     label_center "END - CREATING DOCKER NETWORKING COMPONENTS"
     label_center "START - PULLING BASE IMAGES"
-    pull_base_images
+    #pull_base_images
     label_center "END - PULLING BASE IMAGES"
     label_center "START - BUILDING CONTAINERS WITH DOCKER FILES"
-    build_images_with_docker_file
+    #build_images_with_docker_file
     label_center "END - BUILDING CONTAINERS WITH DOCKER FILES"
     label_center "START - ADDING IMAGES TO THE ENVIROMENT"
-    run_images
+    #run_images
     label_center "END - ADDING IMAGES TO THE ENVIROMENT"
 }
 
