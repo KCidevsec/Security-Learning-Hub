@@ -8,6 +8,7 @@ os_system="$(uname -s)"
 number_of_images=$(sudo docker images | awk 'END { print NR }')
 max_number_of_images="30"
 running_docker_instance=$(sudo docker ps -aq)
+stored_docker_images=$(sudo docker images -q)
 network_interface="lab-net"
 
 #directories
@@ -46,7 +47,7 @@ tomcat_CVE_2020_1938=$root_path$container_dockercompose_directory"tomcat-CVE-202
 weblogic_ssrf=$root_path$container_dockercompose_directory"weblogic-ssrf/"
 
 #lists
-base_images_list=("arm64v8/centos:7" "arm64v8/ubuntu:xenial-20170510" "kalilinux/kali-rolling:latest" "ubuntu:14.04")
+base_images_list=("arm64v8/centos:7" "phusion/baseimage:bionic-1.0.0" "kalilinux/kali-rolling:latest" "ubuntu:14.04")
 dockerfile_list=($centos1 $ftp_anon $kali_linux $proftpd)
 dockercompose_list=($activemq_CVE_2015_5254 $activemq_CVE_2016_3088 $airflow_CVE_2020_11978 $airflow_CVE_2020_11981 
                     $airflow_CVE_2020_17526 $appweb_CVE_2018_8715 $aria2_rce $coldfusion_CVE_2010_2861
@@ -240,7 +241,7 @@ start_kali_with_interactive_shell(){
 run_images()
 {
     run_images_with_docker_file
-    #build_and_run_images_with_docker_compose
+    build_and_run_images_with_docker_compose
     #get_lab_info_on_running_instances
     #start_kali_with_interactive_shell
 }
@@ -251,13 +252,11 @@ check_current_build(){
 
 clean_up_everything(){
     #clear previous runs
-    if [ -z "$running_docker_instance" ]
+    if [ ! -z "$running_docker_instance" ]
     then
     {
-        while IFS= read -r line; do
-            sudo docker stop $line
-            echo "Stoping container with id $line"
-        done <<< "$running_docker_instance"
+        echo "Stoping containers with id $running_docker_instance"
+        sudo docker stop $running_docker_instance
     }
     fi
     #$number_of_images > $max_number_of_images 
@@ -266,7 +265,12 @@ clean_up_everything(){
         sudo docker image prune -a -f
         sudo docker volume prune -f
         sudo docker system prune --volumes
-        sudo docker rmi $(sudo docker images -q)
+        if [ ! -z "$stored_docker_images" ]
+        then
+        {
+            sudo docker rmi $stored_docker_images
+        }
+        fi
     }
     fi
 }
@@ -303,7 +307,7 @@ option_4(){
 
 option_5(){
     label_center "START - CLEARING DOCKER ENVIROMENT"
-    clean_up_everything $number_of_images $max_number_of_images $running_docker_instance
+    clean_up_everything $number_of_images $max_number_of_images $running_docker_instance $stored_docker_images
     label_center "END - CLEARING DOCKER ENVIROMENT"
 }
 
