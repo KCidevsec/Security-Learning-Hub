@@ -46,7 +46,7 @@ tomcat_CVE_2020_1938=$root_path$container_dockercompose_directory"tomcat-CVE-202
 weblogic_ssrf=$root_path$container_dockercompose_directory"weblogic-ssrf/"
 
 #lists
-base_images_list=("centos:7" "metabrainz/base-image:latest" "kalilinux/kali-rolling:latest" "ubuntu:14.04")
+base_images_list=("arm64v8/centos:7" "arm64v8/ubuntu:xenial-20170510" "kalilinux/kali-rolling:latest" "ubuntu:14.04")
 dockerfile_list=($centos1 $ftp_anon $kali_linux $proftpd)
 dockercompose_list=($activemq_CVE_2015_5254 $activemq_CVE_2016_3088 $airflow_CVE_2020_11978 $airflow_CVE_2020_11981 
                     $airflow_CVE_2020_17526 $appweb_CVE_2018_8715 $aria2_rce $coldfusion_CVE_2010_2861
@@ -181,7 +181,7 @@ build_image_from_dockerfile()
 
     if [ $image_exist = false ]
     then
-        cd $1 && sudo docker buildx build --platform=linux/amd64 -t $image_name .
+        cd $1 && sudo docker buildx build --platform=linux/arm64 -t $image_name .
     fi
 }
 
@@ -221,7 +221,7 @@ run_images_with_docker_file(){
         --network $network_interface \
         --publish 21/tcp \
         --publish 80/tcp \
-        proftp
+        proftpd
 }
 
 get_lab_info_on_running_instances()
@@ -240,9 +240,9 @@ start_kali_with_interactive_shell(){
 run_images()
 {
     run_images_with_docker_file
-    build_and_run_images_with_docker_compose
-    get_lab_info_on_running_instances
-    start_kali_with_interactive_shell
+    #build_and_run_images_with_docker_compose
+    #get_lab_info_on_running_instances
+    #start_kali_with_interactive_shell
 }
 
 check_current_build(){
@@ -280,16 +280,16 @@ option_2(){
     check_current_build
     label_center "END - CHECKING CURRENT BUILD"
     label_center "START - CREATING DOCKER NETWORKING COMPONENTS"
-    #build_docker_network
+    build_docker_network
     label_center "END - CREATING DOCKER NETWORKING COMPONENTS"
     label_center "START - PULLING BASE IMAGES"
-    #pull_base_images
+    pull_base_images
     label_center "END - PULLING BASE IMAGES"
     label_center "START - BUILDING CONTAINERS WITH DOCKER FILES"
-    #build_images_with_docker_file
+    build_images_with_docker_file
     label_center "END - BUILDING CONTAINERS WITH DOCKER FILES"
     label_center "START - ADDING IMAGES TO THE ENVIROMENT"
-    #run_images
+    run_images
     label_center "END - ADDING IMAGES TO THE ENVIROMENT"
 }
 

@@ -1,17 +1,17 @@
-FROM centos:7
-LABEL Author=Kyriakos_Costa 
-LABEL Email=kyriakoskosta@gmai.com
+FROM arm64v8/centos:7
+LABEL Author="Kyriakos_Costa"
+LABEL Email="kyriakoskosta@gmai.com"
 
 RUN yum makecache
-RUN 	yum install epel-release -y && \
-	    yum update -y && \
-	    yum install -y \
-	    nginx \
-	    php \
-	    php-mysql \
-	    php-fpm \
-        openssh-server \
-        openssh-clients
+RUN yum -y install epel-release
+RUN yum update -y
+RUN yum install -y \
+	nginx \
+	php \
+	php-mysql \
+	php-fpm \
+	openssh-server \
+	openssh-clients
 
 COPY webfiles /data/www
 

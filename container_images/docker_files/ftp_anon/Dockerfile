@@ -1,15 +1,16 @@
-FROM metabrainz/base-image
+FROM phusion/baseimage:bionic-1.0.0
 
+RUN apt-get check
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends vsftpd \
+    && apt-get install -y --no-install-suggests --no-install-recommends vsftpd unzip curl wget iputils-ping \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN mkdir -p /var/run/vsftpd/empty \
- && mkdir -p /etc/vsftpd \
- && mkdir -p /var/ftp \
- && mv /etc/vsftpd.conf /etc/vsftpd.orig \
- && mkdir /etc/service/vsftpd
+RUN mkdir -p /var/run/vsftpd/empty
+RUN mkdir -p /etc/vsftpd 
+RUN mkdir -p /var/ftp 
+RUN mv /etc/vsftpd.conf /etc/vsftpd.orig 
+RUN mkdir -p /etc/service/vsftpd
 
 ADD vsftpd.sh /etc/service/vsftpd/run
 
