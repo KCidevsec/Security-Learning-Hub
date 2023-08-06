@@ -201,24 +201,28 @@ build_and_run_images_with_docker_compose(){
 }
 
 run_images_with_docker_file(){
+
+    time_t=$(date +%s)
     sudo docker run -d \
         --privileged \
-        --name centos1 \
+        --name centos1-$(($time_t * 1000)) \
         --network $network_interface \
         centos1
     
+    time_t=$(date +%s)
     sudo docker run -d \
         --privileged \
-        --name ftp-anon \
+        --name ftp-anon-$(($time_t * 1000)) \
         --network $network_interface \
         --publish 20-21/tcp \
         --publish 65500-65515/tcp \
         --volume "$ftp_anon"/mount_partition:/var/ftp:ro \
         ftp_anon
     
+    time_t=$(date +%s)
     sudo docker run -d \
         --privileged \
-        --name proftpd_1_3_5 \
+        --name proftpd_1_3_5-$(($time_t * 1000)) \
         --network $network_interface \
         --publish 21/tcp \
         --publish 80/tcp \
