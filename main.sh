@@ -231,7 +231,18 @@ run_images_with_docker_file(){
 
 get_lab_info_on_running_instances()
 {
-    sudo docker inspect lab-net | grep -C3 "IPv4Address"
+    
+    full_network_info=$(sudo docker inspect $network_interface)
+    full_network_info_lines=$(echo $full_network_info | wc -l )
+    trimmed_network_info=$(echo $full_network_info | grep -A $full_network_info_lines "Containers" | grep -B $full_network_info_lines "Options")
+    trimmed_network_info_lines=$(echo $trimmed_network_info | wc -l)
+    trimmed_network_info_lines_temp1=$(($trimmed_network_info_lines-2))
+    trimmed_network_info_temp1=$(echo $trimmed_network_info | head -n $trimmed_network_info_lines_temp1)
+    trimmed_network_info_temp2="${trimmed_network_info_temp1}\n[\n}"
+    trimmed_network_info_temp3=$(gsed '0,/{/s//[/' <<< "$trimmed_network_info_temp2")
+    trimmed_network_info_final="{\n${trimmed_network_info_temp3}"
+    #I STAYED HERE AND I NEED TO MAKE JQ RENDER JSON TO TABLE
+    jq -r '["NAME","MAC","IPv4"], ["----","---","----"], (.Containers[][] | [.Name, .MacAddress, .IPv4Address]) | @tsv' <<< "$trimmed_network_info_final"
 }
 
 start_kali_with_interactive_shell(){
