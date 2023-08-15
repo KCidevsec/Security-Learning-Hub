@@ -238,9 +238,9 @@ get_lab_info_on_running_instances()
     trimmed_network_info_lines=$(echo $trimmed_network_info | wc -l)
     trimmed_network_info_lines_temp1=$(($trimmed_network_info_lines-2))
     trimmed_network_info_temp1=$(echo $trimmed_network_info | head -n $trimmed_network_info_lines_temp1)
-    trimmed_network_info_temp2="${trimmed_network_info_temp1}\n[\n}"
-    trimmed_network_info_temp3=$(gsed '0,/{/s//[/' <<< "$trimmed_network_info_temp2")
-    trimmed_network_info_final="{\n${trimmed_network_info_temp3}"
+    trimmed_network_info_temp2="${trimmed_network_info_temp1}}]}}"
+    trimmed_network_info_temp3=$(gsed '0,/{/s//[{/' <<< "$trimmed_network_info_temp2")
+    trimmed_network_info_final="{\"id\":{${trimmed_network_info_temp3}"
     #I STAYED HERE AND I NEED TO MAKE JQ RENDER JSON TO TABLE
     jq -r '["NAME","MAC","IPv4"], ["----","---","----"], (.Containers[][] | [.Name, .MacAddress, .IPv4Address]) | @tsv' <<< "$trimmed_network_info_final"
 }
