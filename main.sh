@@ -231,23 +231,26 @@ run_images_with_docker_file(){
 
 get_lab_info_on_running_instances()
 {
+    sleep 10
     full_network_info=$(sudo docker inspect $network_interface)
-    full_network_info_lines=$(echo $full_network_info | wc -l )
-    trimmed_network_info=$(echo $full_network_info | grep -A $full_network_info_lines "Containers" | grep -B $full_network_info_lines "Options")
-    trimmed_network_info_lines=$(echo $trimmed_network_info | wc -l)
+    full_network_info_lines=$(echo "$full_network_info" | wc -l )
+    trimmed_network_info=$(echo "$full_network_info" | grep -A $full_network_info_lines "Containers" | grep -B $full_network_info_lines "Options")
+    trimmed_network_info_lines=$(echo "$trimmed_network_info" | wc -l)
     trimmed_network_info_lines_temp1=$(($trimmed_network_info_lines-2))
-    trimmed_network_info_temp1=$(echo $trimmed_network_info | head -n $trimmed_network_info_lines_temp1)
-    container_names=$(echo $trimmed_network_info_temp1 | grep "Name" | awk '{print $2}'| tr -d , | tr '\n' " " | tr -d "\"")
-    container_ips=$(echo $trimmed_network_info_temp1 | grep "IPv4" | awk '{print $2}' | tr -d ,| tr '\n' " " | tr -d "\"")
-    container_mac=$(echo $trimmed_network_info_temp1 | grep "MacAddress" | awk '{print $2}' | tr -d ,| tr '\n' " " | tr -d "\"")
+    trimmed_network_info_temp1=$(echo "$trimmed_network_info" | head -n $trimmed_network_info_lines_temp1)
+    container_names=$(echo "$trimmed_network_info_temp1" | grep "Name" | awk '{print $2}'| tr -d , | tr '\n' " " | tr -d "\"")
+    container_ips=$(echo "$trimmed_network_info_temp1" | grep "IPv4" | awk '{print $2}' | tr -d ,| tr '\n' " " | tr -d "\"")
+    container_mac=$(echo "$trimmed_network_info_temp1" | grep "MacAddress" | awk '{print $2}' | tr -d ,| tr '\n' " " | tr -d "\"")
     container_names_array=(`echo ${container_names}`);
     container_ips_array=(`echo ${container_ips}`);
     container_mac_array=(`echo ${container_mac}`);
-    printf '  %-42.21s%-16.8s %-20.11s \n' "Container Name" "IP" "MAC Address"
+    start=1
+    end=${#container_names_array[@]}
+    printf '  %-4.4s   %-42.21s%-16.8s %-20.11s \n' "No" "Container Name" "IP" "MAC Address"
     echo '----------------------------------------------------------------------------------'
-    for i in {1..${#container_names_array[@]}};
+    for i in $(eval echo "{$start..$end}");
     do
-        printf '| %-40.40s| %-15.15s| %-20.20s |\n' ${container_names_array[$i]} ${container_ips_array[$i]} ${container_mac_array[$i]}
+        printf '| %-4.4s | %-40.40s| %-15.15s| %-20.20s |\n' $i ${container_names_array[$i]} ${container_ips_array[$i]} ${container_mac_array[$i]}
     done
 }
 
@@ -263,7 +266,7 @@ run_images()
 {
     run_images_with_docker_file
     build_and_run_images_with_docker_compose
-    #get_lab_info_on_running_instances
+    get_lab_info_on_running_instances
     #start_kali_with_interactive_shell
 }
 

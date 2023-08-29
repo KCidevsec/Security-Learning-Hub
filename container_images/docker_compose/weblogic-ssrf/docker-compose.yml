@@ -8,3 +8,7 @@ services:
     - "7001:7001"
  redis:
    image: vulhub/baselinux:centos-6
+networks:
+  default:
+    name: lab-net
+    external: true
