@@ -256,22 +256,10 @@ get_lab_info_on_running_instances()
 
 start_kali_with_interactive_shell(){
     sudo docker run -it \
-        --name kalilinux 
+        --name kalilinux \
         --network $network_interface \
-        -v "$kali_linux"kali_share_folder:/root/kali_share_folder \
+        --volume "$kali_linux"kali_share_folder:/root/kali_share_folder \
         kali_linux /bin/bash
-}
-
-run_images()
-{
-    run_images_with_docker_file
-    build_and_run_images_with_docker_compose
-    get_lab_info_on_running_instances
-    #start_kali_with_interactive_shell
-}
-
-check_current_build(){
-    echo "Need to check current build somehow"
 }
 
 clean_up_everything(){
@@ -299,6 +287,24 @@ clean_up_everything(){
     fi
 }
 
+cleanup_after_exiting_lab(){
+    sudo docker stop $(sudo docker ps -aq)
+    sudo docker rm $(sudo docker ps -aq)
+}
+
+run_images()
+{
+    run_images_with_docker_file
+    build_and_run_images_with_docker_compose
+    get_lab_info_on_running_instances
+    start_kali_with_interactive_shell
+}
+
+check_current_build(){
+    echo "Need to check current build somehow"
+}
+
+
 option_1(){
     echo "Not done yet"
 }
@@ -319,6 +325,10 @@ option_2(){
     label_center "START - ADDING IMAGES TO THE ENVIROMENT"
     run_images
     label_center "END - ADDING IMAGES TO THE ENVIROMENT"
+    label_center "START - CLEANING ENVIROMENT BEFORE SHUTDOWN"
+    cleanup_after_exiting_lab
+    label_center "END - CLEANING ENVIROMENT BEFORE SHUTDOWN"
+    label_center "GOOD BYE! SEE NEXT TIME!"
 }
 
 option_3(){
