@@ -131,7 +131,6 @@ build_docker_network(){
         sudo docker network create --driver bridge $network_interface
     }
     fi
-    
 }
 
 check_for_null_variables(){
@@ -250,7 +249,9 @@ get_lab_info_on_running_instances()
     echo '----------------------------------------------------------------------------------'
     for i in $(eval echo "{$start..$end}");
     do
-        printf '| %-4.4s | %-40.40s| %-15.15s| %-20.20s |\n' $i ${container_names_array[$i]} ${container_ips_array[$i]} ${container_mac_array[$i]}
+        if [ $i != $end ]; then
+            printf '| %-4.4s | %-40.40s| %-15.15s| %-20.20s |\n' $i ${container_names_array[$i]} ${container_ips_array[$i]} ${container_mac_array[$i]}
+        fi
     done
 }
 
@@ -298,6 +299,14 @@ run_images()
     build_and_run_images_with_docker_compose
     get_lab_info_on_running_instances
     start_kali_with_interactive_shell
+}
+
+start_dvwa(){
+    if (( "$_architecture" == "arm" )); then
+        sudo docker run --rm -it -p 80:80 petechua/docker-vulnerable-dvwa:1.0
+    else
+        sudo docker run --rm -it -p 80:80 vulnerables/web-dvwa
+    fi
 }
 
 check_current_build(){
