@@ -1,6 +1,12 @@
 FROM debian:9.2
 
-LABEL maintainer "opsxcq@strm.sh"
+LABEL maintainer "kyriakoskosta@gmail.com"
+
+RUN echo "deb http://archive.debian.org/debian stretch main" > /etc/apt/sources.list 
+RUN echo "deb-src http://archive.debian.org/debian stretch main" >> /etc/apt/sources.list 
+RUN echo "deb http://archive.debian.org/debian stretch-backports main" >> /etc/apt/sources.list 
+RUN echo "deb http://archive.debian.org/debian-security stretch/updates main" >> /etc/apt/sources.list 
+RUN echo "deb-src http://archive.debian.org/debian-security stretch/updates main" >> /etc/apt/sources.list
 
 RUN apt-get update && \
     apt-get upgrade -y && \

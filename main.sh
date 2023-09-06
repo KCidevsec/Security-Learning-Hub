@@ -14,12 +14,14 @@ network_interface="lab-net"
 #directories
 container_dockerfile_directory="container_images/docker_files/"
 container_dockercompose_directory="container_images/docker_compose/"
+container_docker_dvwa_directory="container_images/docker_dvwa/"
 
 #images with Dockerfile
 centos1=$root_path$container_dockerfile_directory"centos1/"
 ftp_anon=$root_path$container_dockerfile_directory"ftp_anon/"
 kali_linux=$root_path$container_dockerfile_directory"kali_linux/"
 proftpd=$root_path$container_dockerfile_directory"proftpd/"
+dvwa=$root_path$container_docker_dvwa_directory
 
 #images with docker compose
 activemq_CVE_2015_5254=$root_path$container_dockercompose_directory"activemq-CVE-2015-5254/"
@@ -302,11 +304,18 @@ run_images()
 }
 
 start_dvwa(){
-    if (( "$_architecture" == "arm" )); then
-        sudo docker run --rm -it -p 80:80 petechua/docker-vulnerable-dvwa:1.0
-    else
-        sudo docker run --rm -it -p 80:80 vulnerables/web-dvwa
-    fi
+    cd $dvwa && sudo docker buildx build --platform=linux/arm64 -t dvwa .
+    time_t=$(date +%s)
+    sudo docker run --rm \
+        -it \
+        --name dvwa-$(($time_t * 1000)) \
+        --publish 80:80 \
+        dvwa
+    #if (( "$_architecture" == "arm" )); then
+    #    sudo docker run --rm -it -p 80:80 petechua/docker-vulnerable-dvwa:1.0
+    #else
+    #    sudo docker run --rm -it -p 80:80 vulnerables/web-dvwa
+    #fi
 }
 
 check_current_build(){
@@ -341,7 +350,13 @@ option_2(){
 }
 
 option_3(){
-    echo "Not done yet"
+    label_center "START - CHECKING CURRENT BUILD"
+    check_current_build
+    label_center "END - CHECKING CURRENT BUILD"
+    label_center "START - DEPLOYING DVWA"
+    start_dvwa
+    label_center "END - DEPLOYING DVWA"
+    label_center "GOOD BYE! SEE NEXT TIME!"
 }
 
 option_4(){
@@ -373,8 +388,8 @@ menu() {
                                           |_|   |_|\____|____/                                                                                                                                      
         "
         echo "      Author: Kyriakos Costa"
-        echo "      Date: 22 January 2023"
-        echo "      Version 6.0"
+        echo "      Date: 6 August 2023"
+        echo "      Version 7.0"
         echo "      Contact: kyriakoskosta@outlook.com"
         echo ""
         echo ""
