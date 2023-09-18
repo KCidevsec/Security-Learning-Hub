@@ -126,4 +126,7 @@ fi
 # starting services
 rm -f /var/spool/postfix/pid/master.pid
 
+echo "The server IP address is:"
+ifconfig eth0 | grep "inet addr"
+
 exec /usr/sbin/postfix -c /etc/postfix start-fg

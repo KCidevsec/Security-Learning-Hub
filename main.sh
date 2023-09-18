@@ -15,7 +15,7 @@ network_interface="lab-net"
 container_dockerfile_directory="container_images/docker_files/"
 container_dockercompose_directory="container_images/docker_compose/"
 container_docker_dvwa_directory="container_images/docker_dvwa/"
-container_docker_postfix="contaier_images/docker_postfix/"
+container_docker_postfix="container_images/docker_postfix/"
 
 #images with Dockerfile
 centos1=$root_path$container_dockerfile_directory"centos1/"
@@ -319,8 +319,8 @@ start_dvwa(){
 
 start_postfix(){
     cd $postfix && sudo docker buildx build --platform=linux/arm64 -t postfix .
-    sudo docker run -d \
-        --privileged \
+    sudo docker run --rm \
+        -it \
         --publish 25:25 \
         --name postfix \
         -e SMTP_SERVER=smpt.security_lerning_hub.local \
@@ -378,9 +378,6 @@ option_4(){
     label_center "START - DEPLOYING POSTFIX EMAIL SERVER"
     start_postfix
     label_center "END - DEPLOYING POSTFIX EMAIL SERVER"
-    label_center "START - CLEANING ENVIROMENT BEFORE SHUTDOWN"
-    cleanup_after_exiting_lab
-    label_center "END - CLEANING ENVIROMENT BEFORE SHUTDOWN"
     label_center "GOOD BYE! SEE NEXT TIME!"
 }
 
@@ -409,8 +406,8 @@ menu() {
                                           |_|   |_|\____|____/                                                                                                                                      
         "
         echo "      Author: Kyriakos Costa"
-        echo "      Date: 6 August 2023"
-        echo "      Version 7.0"
+        echo "      Date: 18 September 2023"
+        echo "      Version 8.0"
         echo "      Contact: kyriakoskosta@outlook.com"
         echo ""
         echo ""
