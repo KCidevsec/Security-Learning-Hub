@@ -311,11 +311,20 @@ start_dvwa(){
         --name dvwa-$(($time_t * 1000)) \
         --publish 80:80 \
         dvwa
-    #if (( "$_architecture" == "arm" )); then
-    #    sudo docker run --rm -it -p 80:80 petechua/docker-vulnerable-dvwa:1.0
-    #else
-    #    sudo docker run --rm -it -p 80:80 vulnerables/web-dvwa
-    #fi
+    #for intel
+    #sudo docker run --rm -it -p 80:80 vulnerables/web-dvwa
+}
+
+start_postfix(){
+    sudo docker run -d \
+    --privileged \
+    --network lab-net \
+    --publish 25/tcp \
+    --name postfix -P \
+    -e SMTP_SERVER=smpt.uni_sec_hub.local \
+    -e SMTP_USERNAME=student@uni_sec_hub.local \
+    -e SMTP_PASSWORD=student -e SERVER_HOSTNAME=helpdesk.uni_sec_hub.local \
+    juanluisbaptiste/postfix:latest
 }
 
 check_current_build(){
