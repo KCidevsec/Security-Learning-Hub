@@ -330,19 +330,11 @@ start_postfix(){
         postfix
 }
 
-check_current_build(){
-    echo "Need to check current build somehow"
-}
-
-
 option_1(){
-    echo "Not done yet"
+    echo "TBI"
 }
 
 option_2(){
-    label_center "START - CHECKING CURRENT BUILD"
-    check_current_build
-    label_center "END - CHECKING CURRENT BUILD"
     label_center "START - CREATING DOCKER NETWORKING COMPONENTS"
     build_docker_network
     label_center "END - CREATING DOCKER NETWORKING COMPONENTS"
@@ -362,9 +354,6 @@ option_2(){
 }
 
 option_3(){
-    label_center "START - CHECKING CURRENT BUILD"
-    check_current_build
-    label_center "END - CHECKING CURRENT BUILD"
     label_center "START - DEPLOYING DVWA"
     start_dvwa
     label_center "END - DEPLOYING DVWA"
@@ -372,9 +361,6 @@ option_3(){
 }
 
 option_4(){
-    label_center "START - CHECKING CURRENT BUILD"
-    check_current_build
-    label_center "END - CHECKING CURRENT BUILD"
     label_center "START - DEPLOYING POSTFIX EMAIL SERVER"
     start_postfix
     label_center "END - DEPLOYING POSTFIX EMAIL SERVER"
