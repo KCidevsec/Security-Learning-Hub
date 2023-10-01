@@ -52,6 +52,7 @@ weblogic_ssrf=$root_path$container_dockercompose_directory"weblogic-ssrf/"
 
 #lists
 base_images_list=("arm64v8/centos:7" "phusion/baseimage:bionic-1.0.0" "kalilinux/kali-rolling:latest" "ubuntu:14.04")
+base_images_list_x86_64=("centos:7" )
 dockerfile_list=($centos1 $ftp_anon $kali_linux $proftpd)
 dockercompose_list=($activemq_CVE_2015_5254 $activemq_CVE_2016_3088 $airflow_CVE_2020_11978 $airflow_CVE_2020_11981 
                     $airflow_CVE_2020_17526 $appweb_CVE_2018_8715 $aria2_rce $coldfusion_CVE_2010_2861
