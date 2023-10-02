@@ -10,7 +10,9 @@ max_number_of_images="30"
 running_docker_instance=$(sudo docker ps -aq)
 stored_docker_images=$(sudo docker images -q)
 network_interface="lab-net"
-if [ $os_architecture == "x86_64" ]; then
+intel="x86_64"
+arm="arm"
+if [ $os_architecture == $intel ]; then
     platform_docker_build="--platform=linux/amd64"
 else
     platform_docker_build="--platform=linux/arm64"
@@ -25,7 +27,9 @@ container_docker_postfix="container_images/docker_postfix/"
 
 #images with Dockerfile
 centos1=$root_path$container_dockerfile_directory"centos1/"
+centos1_x86_64=$root_path$container_dockerfile_x86_64_directory"centos1/"
 ftp_anon=$root_path$container_dockerfile_directory"ftp_anon/"
+ftp_anon_x86_64=$root_path$container_dockerfile_x86_64_directory"ftp_anon/"
 kali_linux=$root_path$container_dockerfile_directory"kali_linux/"
 proftpd=$root_path$container_dockerfile_directory"proftpd/"
 dvwa=$root_path$container_docker_dvwa_directory
@@ -60,6 +64,7 @@ weblogic_ssrf=$root_path$container_dockercompose_directory"weblogic-ssrf/"
 base_images_list=("arm64v8/centos:7" "phusion/baseimage:bionic-1.0.0" "kalilinux/kali-rolling:latest" "ubuntu:14.04")
 base_images_list_x86_64=("centos:7" "metabrainz/base-image" "kalilinux/kali-rolling:latest" "ubuntu:14.04")
 dockerfile_list=($centos1 $ftp_anon $kali_linux $proftpd)
+dockerfile_list_x86_64=($centos1_x86_64 $ftp_anon_x86_64 $kali_linux $proftpd)
 dockercompose_list=($activemq_CVE_2015_5254 $activemq_CVE_2016_3088 $airflow_CVE_2020_11978 $airflow_CVE_2020_11981 
                     $airflow_CVE_2020_17526 $appweb_CVE_2018_8715 $aria2_rce $coldfusion_CVE_2010_2861
                     $couchdb_CVE_2017_12635 $couchdb_CVE_2022_24706 $dns_zone_transfer $docker_smtp
@@ -69,14 +74,9 @@ dockercompose_list=($activemq_CVE_2015_5254 $activemq_CVE_2016_3088 $airflow_CVE
                     $weblogic_ssrf)
 
 start_services(){
-    if [[ "$os_system" = "Darwin" ]]
-    then
-        open -a Docker
-    elif [[ "$os_system" = "Linux" ]]
+    if [[ "$os_system" = "Linux" ]]
     then
         sudo service docker start
-    else
-        echo "Unsupported OS System"
     fi
 }
 
@@ -158,8 +158,27 @@ check_for_null_variables(){
 }
 
 pull_base_images(){
-    for base_image_list_item in ${base_images_list[@]}; do
+
+    if [ $os_architecture == $intel ]; then
     {
+        for base_images_list_x86_64_item in ${base_images_list_x86_64[@]}; do
+        {
+        if [[ -z "$(docker images | awk '{print $1":"$2}' | grep $base_image_list_item)" ]]
+        then
+        {
+            echo "Pulling $base_images_list_x86_64_item"
+            docker pull $base_images_list_x86_64_item
+        }
+        else
+            echo "Image $base_images_list_x86_64_item FOUND!"
+        fi
+        }
+        done
+    }
+    else
+    {
+        for base_image_list_item in ${base_images_list[@]}; do
+        {
         if [[ -z "$(docker images | awk '{print $1":"$2}' | grep $base_image_list_item)" ]]
         then
         {
@@ -169,8 +188,10 @@ pull_base_images(){
         else
             echo "Image $base_image_list_item FOUND!"
         fi
+        }
+        done
     }
-    done
+    fi
 }
 
 # recieves that path of the docker file and builds an image
@@ -197,9 +218,20 @@ build_image_from_dockerfile()
 }
 
 build_images_with_docker_file(){
-    for dockerfile_list_item in ${dockerfile_list[@]}; do
-        build_image_from_dockerfile $dockerfile_list_item
-    done
+
+    if [ $os_architecture == $intel ]; then
+    {    
+        for dockerfile_list_item in ${dockerfile_list_x86_64[@]}; do
+            build_image_from_dockerfile $dockerfile_list_item
+        done
+    }
+    else
+    {
+        for dockerfile_list_item in ${dockerfile_list[@]}; do
+            build_image_from_dockerfile $dockerfile_list_item
+        done
+    }
+    fi    
 }
 
 build_and_run_images_with_docker_compose(){
@@ -426,8 +458,5 @@ menu() {
     done
 }
 
-#start_services
-
-#build_images_with_docker_file
-
+start_services
 menu
