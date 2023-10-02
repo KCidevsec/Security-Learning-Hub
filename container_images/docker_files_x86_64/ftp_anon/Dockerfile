@@ -1,4 +1,4 @@
-FROM phusion/baseimage:bionic-1.0.0
+FROM metabrainz/base-image
 
 RUN apt-get check
 RUN apt-get update \

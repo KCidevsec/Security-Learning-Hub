@@ -10,9 +10,15 @@ max_number_of_images="30"
 running_docker_instance=$(sudo docker ps -aq)
 stored_docker_images=$(sudo docker images -q)
 network_interface="lab-net"
+if [ $os_architecture == "x86_64" ]; then
+    platform_docker_build="--platform=linux/amd64"
+else
+    platform_docker_build="--platform=linux/arm64"
+fi
 
 #directories
 container_dockerfile_directory="container_images/docker_files/"
+container_dockerfile_x86_64_directory="container_images/docker_files_x86_64/"
 container_dockercompose_directory="container_images/docker_compose/"
 container_docker_dvwa_directory="container_images/docker_dvwa/"
 container_docker_postfix="container_images/docker_postfix/"
@@ -52,7 +58,7 @@ weblogic_ssrf=$root_path$container_dockercompose_directory"weblogic-ssrf/"
 
 #lists
 base_images_list=("arm64v8/centos:7" "phusion/baseimage:bionic-1.0.0" "kalilinux/kali-rolling:latest" "ubuntu:14.04")
-base_images_list_x86_64=("centos:7" )
+base_images_list_x86_64=("centos:7" "metabrainz/base-image" "kalilinux/kali-rolling:latest" "ubuntu:14.04")
 dockerfile_list=($centos1 $ftp_anon $kali_linux $proftpd)
 dockercompose_list=($activemq_CVE_2015_5254 $activemq_CVE_2016_3088 $airflow_CVE_2020_11978 $airflow_CVE_2020_11981 
                     $airflow_CVE_2020_17526 $appweb_CVE_2018_8715 $aria2_rce $coldfusion_CVE_2010_2861
@@ -186,7 +192,7 @@ build_image_from_dockerfile()
 
     if [ $image_exist = false ]
     then
-        cd $1 && sudo docker buildx build --platform=linux/arm64 -t $image_name .
+        cd $1 && sudo docker buildx build $platform_docker_build -t $image_name .
     fi
 }
 
@@ -307,7 +313,7 @@ run_images()
 }
 
 start_dvwa(){
-    cd $dvwa && sudo docker buildx build --platform=linux/arm64 -t dvwa .
+    cd $dvwa && sudo docker buildx build $platform_docker_build -t dvwa .
     time_t=$(date +%s)
     sudo docker run --rm \
         -it \
@@ -319,7 +325,7 @@ start_dvwa(){
 }
 
 start_postfix(){
-    cd $postfix && sudo docker buildx build --platform=linux/arm64 -t postfix .
+    cd $postfix && sudo docker buildx build $platform_docker_build -t postfix .
     sudo docker run --rm \
         -it \
         --publish 25:25 \
