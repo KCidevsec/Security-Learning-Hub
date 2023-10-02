@@ -163,7 +163,7 @@ pull_base_images(){
     {
         for base_images_list_x86_64_item in ${base_images_list_x86_64[@]}; do
         {
-        if [[ -z "$(docker images | awk '{print $1":"$2}' | grep $base_image_list_item)" ]]
+        if [[ -z "$(docker images | awk '{print $1":"$2}' | grep $base_images_list_x86_64_item)" ]]
         then
         {
             echo "Pulling $base_images_list_x86_64_item"
@@ -431,8 +431,8 @@ menu() {
                                           |_|   |_|\____|____/                                                                                                                                      
         "
         echo "      Author: Kyriakos Costa"
-        echo "      Date: 18 September 2023"
-        echo "      Version 8.0"
+        echo "      Date: 2 October 2023"
+        echo "      Version 8.1"
         echo "      Contact: kyriakoskosta@outlook.com"
         echo ""
         echo ""
