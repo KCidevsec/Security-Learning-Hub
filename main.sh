@@ -431,8 +431,8 @@ menu() {
                                           |_|   |_|\____|____/                                                                                                                                      
         "
         echo "      Author: Kyriakos Costa"
-        echo "      Date: 2 October 2023"
-        echo "      Version 8.1"
+        echo "      Date: 16 August 2024"
+        echo "      Version 8.2"
         echo "      Contact: kyriakoskosta@outlook.com"
         echo ""
         echo ""
