@@ -1,14 +1,15 @@
-FROM arm64v8/centos:7
+FROM arm64v8/fedora
 LABEL Author="Kyriakos_Costa"
 LABEL Email="kyriakoskosta@gmai.com"
 
+RUN yum clean all 
 RUN yum makecache
-RUN yum -y install epel-release
+#RUN yum -y install epel-release
 RUN yum update -y
 RUN yum install -y \
 	nginx \
 	php \
-	php-mysql \
+	php-mysqlnd \
 	php-fpm \
 	openssh-server \
 	openssh-clients

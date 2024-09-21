@@ -1,4 +1,3 @@
-version: '2'
 services:
  aria2:
    image: vulhub/aria2:1.18.8
