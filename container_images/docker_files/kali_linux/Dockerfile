@@ -21,4 +21,4 @@ RUN 	apt update -y && \
 
 RUN mkdir -p ~/kali_share_folder
 
-RUN pip install requests
+#RUN pip install requests
