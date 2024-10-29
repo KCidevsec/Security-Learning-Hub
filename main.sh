@@ -302,6 +302,7 @@ start_kali_with_interactive_shell(){
     sudo docker run -it \
         --name kalilinux \
         --network $network_interface \
+        --privileged
         --volume "$kali_linux"kali_share_folder:/root/kali_share_folder \
         kali_linux /bin/bash
 }
