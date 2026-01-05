@@ -1,0 +1,72 @@
+# docker-compose.yml
+services:
+  web:
+    build: .
+    platform: linux/arm64
+    ports:
+      - "8080:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=db
+      - DB_USER=dvwa
+      - DB_PASS=p@ssw0rd
+      - DB_NAME=dvwa
+    volumes:
+      - webroot:/var/www/html
+      - ./src/index.php:/var/www/html/index.php:ro
+      - ./src/check.php:/var/www/html/check.php:ro
+      - ./src/logo.png:/var/www/html/logo.png:ro
+    command: >
+      bash -c "
+      chmod 777 /var/www/html &&
+      apache2-foreground
+      "
+    networks:
+      - sqli-network
+
+  db:
+    image: mysql:8.0
+    platform: linux/arm64
+    command: bash -c "umask 0002 && docker-entrypoint.sh mysqld --secure-file-priv=/var/www/html"
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpass
+      - MYSQL_DATABASE=dvwa
+      - MYSQL_USER=dvwa
+      - MYSQL_PASSWORD=p@ssw0rd
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - webroot:/var/www/html
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - sqli-network
+
+  db-grant:
+    image: mysql:8.0
+    platform: linux/arm64
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      bash -c "
+      mysql -h db -u root -prootpass <<-EOSQL
+        GRANT FILE ON *.* TO 'dvwa'@'%';
+        FLUSH PRIVILEGES;
+        SELECT User, Host, File_priv FROM mysql.user WHERE User='dvwa';
+      EOSQL
+      "
+    networks:
+      - sqli-network
+
+volumes:
+  db-data:
+  webroot:
+
+networks:
+  sqli-network:
