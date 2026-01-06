@@ -23,6 +23,7 @@ container_dockerfile_directory="container_images/docker_files/"
 container_dockerfile_x86_64_directory="container_images/docker_files_x86_64/"
 container_dockercompose_directory="container_images/docker_compose/"
 container_docker_dvwa_directory="container_images/docker_dvwa/"
+container_dockercompose_sqli_directory="sqli-demo/"
 container_docker_postfix="container_images/docker_postfix/"
 
 #images with Dockerfile
@@ -33,6 +34,7 @@ ftp_anon_x86_64=$root_path$container_dockerfile_x86_64_directory"ftp_anon/"
 kali_linux=$root_path$container_dockerfile_directory"kali_linux/"
 proftpd=$root_path$container_dockerfile_directory"proftpd/"
 dvwa=$root_path$container_docker_dvwa_directory
+sqli=$root_path$container_dockercompose_sqli_directory
 postfix=$root_path$container_docker_postfix
 
 #images with docker compose
@@ -357,6 +359,10 @@ start_dvwa(){
     #sudo docker run --rm -it -p 80:80 vulnerables/web-dvwa
 }
 
+start_sqli(){
+    cd $sqli && sudo docker-compose up -d --build 
+}
+
 start_postfix(){
     cd $postfix && sudo docker buildx build $platform_docker_build -t postfix .
     sudo docker run --rm \
@@ -408,6 +414,14 @@ option_4(){
 }
 
 option_5(){
+    label_center "START - DEPLOYING SQLi Demo - University of Nicosia"
+    start_sqli
+    #after termination you need to run docker-compose down -v
+    label_center "END - DEPLOYING SQLi Demo - University of Nicosia"
+    label_center "GOOD BYE! SEE NEXT TIME!"
+}
+
+option_6(){
     label_center "START - CLEARING DOCKER ENVIROMENT"
     clean_up_everything $number_of_images $max_number_of_images $running_docker_instance $stored_docker_images
     label_center "END - CLEARING DOCKER ENVIROMENT"
@@ -432,8 +446,8 @@ menu() {
                                           |_|   |_|\____|____/                                                                                                                                      
         "
         echo "      Author: Kyriakos Costa"
-        echo "      Date: 21 September 2024"
-        echo "      Version 8.3"
+        echo "      Date: 6 Jan 2026"
+        echo "      Version 9.0"
         echo "      Contact: kyriakoskosta@outlook.com"
         echo ""
         echo ""
@@ -441,8 +455,9 @@ menu() {
         echo "    	2  -  Network Security Lab"
         echo "    	3  -  Web Application Security Lab"
         echo "    	4  -  Email Security Lab"
-        echo "    	5  -  Cleanup All Enviroments and Remove Installations"
-        echo "    	6  -  Exit Security Learning Hub"
+        echo "    	5  -  SQLi Demo - University of Nicosia"
+        echo "    	6  -  Cleanup All Enviroments and Remove Installations"
+        echo "    	7  -  Exit Security Learning Hub"
         echo ""
         echo -n "  Enter selection: "
         read selection
@@ -453,7 +468,8 @@ menu() {
             3 ) option_3 ; exit ;;
             4 ) option_4 ; exit ;;
             5 ) option_5 ; exit ;;
-            6 ) echo "Exiting Security Learning Hub"; exit ;;
+            6 ) option_6 ; exit ;;
+            7 ) echo "Exiting Security Learning Hub"; exit ;;
             * ) ;;
         esac
     done
