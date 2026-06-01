@@ -88,6 +88,15 @@ def start_lab(username: str, exercise_id: str) -> None:
     subs = _subs_for(username, ex)
 
     log.info("start_lab user=%s exercise=%s ns=%s", username, exercise_id, ns)
+    # If a previous instance is still terminating, wait for it to clear so we don't try to
+    # create resources in a dying namespace (the stop->start / reset race).
+    try:
+        existing = _core().read_namespace(ns)
+        if existing.metadata.deletion_timestamp is not None:
+            _wait_ns_gone(ns)
+    except ApiException as e:
+        if e.status != 404:
+            raise
     _apply(_render(config.PLATFORM_DIR / "namespace.yaml", subs), ns)
     _annotate(ns, {
         config.ANNO_OWNER: username,

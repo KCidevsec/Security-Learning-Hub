@@ -1,0 +1,50 @@
+# Anonymous-FTP exercise — namespace-agnostic (applied with -n <student-ns>).
+# Placeholder ${IMAGE_FTP} filled by the controller / slice scripts.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ftp-anon
+  labels:
+    app: ftp-anon
+    slh.exercise: ftp-anon
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ftp-anon
+  template:
+    metadata:
+      labels:
+        app: ftp-anon
+        slh.exercise: ftp-anon
+    spec:
+      containers:
+        - name: ftp
+          image: ${IMAGE_FTP}
+          ports:
+            - containerPort: 21
+          readinessProbe:
+            tcpSocket: { port: 21 }
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests: { cpu: "50m", memory: "64Mi" }
+            limits:   { cpu: "300m", memory: "128Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ftp-anon
+  labels:
+    app: ftp-anon
+spec:
+  # Headless: "ftp-anon" resolves directly to the pod IP, so passive-mode data connections
+  # (which target the pod IP on ports 21100-21110) work without listing every passive port.
+  clusterIP: None
+  selector:
+    app: ftp-anon
+  ports:
+    - name: ftp
+      port: 21
+      targetPort: 21

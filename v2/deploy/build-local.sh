@@ -11,6 +11,7 @@ TAG="${TAG:-dev}"
 
 KALI_IMAGE="${REGISTRY}/kali-ttyd:${TAG}"
 IMAGE_WEB="${REGISTRY}/sqli-demo-web:${TAG}"
+IMAGE_FTP="${REGISTRY}/ftp-anon:${TAG}"
 
 echo "[*] Building ${KALI_IMAGE}..."
 docker build -t "${KALI_IMAGE}" \
@@ -22,7 +23,12 @@ docker build -t "${IMAGE_WEB}" \
   -f "${V2_DIR}/exercises/sqli-demo/images/web/Dockerfile" \
   "${V2_DIR}/exercises/sqli-demo"
 
+echo "[*] Building ${IMAGE_FTP}..."
+docker build -t "${IMAGE_FTP}" \
+  -f "${V2_DIR}/exercises/ftp-anon/images/ftp/Dockerfile" \
+  "${V2_DIR}/exercises/ftp-anon"
+
 echo "[*] Importing images into k3d cluster '${CLUSTER}'..."
-k3d image import "${KALI_IMAGE}" "${IMAGE_WEB}" -c "${CLUSTER}"
+k3d image import "${KALI_IMAGE}" "${IMAGE_WEB}" "${IMAGE_FTP}" -c "${CLUSTER}"
 
 echo "[+] Local images built and imported."

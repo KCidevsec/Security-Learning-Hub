@@ -10,10 +10,15 @@ Legend:
 
 | Exercise / image        | amd64  | arm64                      | Notes                                  |
 |-------------------------|--------|----------------------------|----------------------------------------|
-| kali-ttyd               | native | native                     | Kali + ttyd both multi-arch            |
-| sqli-demo (web)         | native | native                     | php:8.1-apache is multi-arch           |
+| kali-ttyd               | native | native                     | Kali + ttyd both multi-arch (verified) |
+| sqli-demo (web)         | native | native                     | php:8.1-apache is multi-arch (verified)|
 | sqli-demo (db)          | native | native                     | mysql:8.0 is multi-arch                |
+| ftp-anon                | native | native                     | rebuilt on ubuntu:22.04 (was phusion amd64-only) |
 | _vulhub CVE stacks_     | native | mostly amd64-only (emulated) | ported in Phase 3; flag each as ported |
+
+> "verified" = `docker buildx --platform linux/amd64,linux/arm64` builds clean for both
+> arches (kali-ttyd's amd64 built under QEMU emulation on the Apple Silicon dev box).
+> A genuinely amd64-only port (the emulation path) is still pending in Phase 3.
 
 ## How this is enforced
 - Custom images are built multi-arch (`make push`, `deploy/buildx-push.sh`).

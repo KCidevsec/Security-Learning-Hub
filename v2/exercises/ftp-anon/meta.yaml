@@ -1,0 +1,30 @@
+id: ftp-anon
+title: "Anonymous FTP Exposure"
+category: network
+summary: >
+  A misconfigured vsftpd server allows anonymous read access to a directory containing
+  sensitive files. Students enumerate the service and exfiltrate credentials and a flag.
+
+arch:
+  amd64: native
+  arm64: native          # rebuilt on ubuntu:22.04 (multi-arch) instead of phusion/baseimage
+emulated_on_apple_silicon: false
+
+images:
+  - name: ftp-anon
+    context: images/ftp
+
+manifest_images:
+  IMAGE_FTP: ftp-anon
+
+entrypoint_service: ftp-anon
+ports:
+  - { service: ftp-anon, port: 21, proto: ftp }
+
+flag: "FLAG{anonymous_ftp_exposed}"
+
+objectives:
+  - Discover the FTP service (nmap)
+  - Log in anonymously (no credentials required)
+  - Enumerate and download exposed files
+  - Recover credentials from secrets/ and capture the flag
