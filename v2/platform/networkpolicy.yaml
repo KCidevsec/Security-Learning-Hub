@@ -46,10 +46,14 @@ spec:
   policyTypes: ["Ingress"]
   ingress:
     - from:
+        # Traefik ingress controller (k3s/k3d run it in kube-system)...
         - namespaceSelector:
             matchLabels:
-              # k3s/k3d run Traefik in kube-system; adjust for your ingress controller.
               kubernetes.io/metadata.name: kube-system
+        # ...and the controller, which reverse-proxies the browser shell.
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: slh-system
       ports:
         - protocol: TCP
           port: 7681

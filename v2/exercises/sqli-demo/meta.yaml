@@ -19,6 +19,14 @@ images:
     context: images/web
     # mysql:8.0 is used stock (multi-arch upstream) — not built here.
 
+# Maps the ${PLACEHOLDER} in manifest.yaml -> the image name to build a full ref for
+# (controller expands to <REGISTRY>/<name>:<TAG>). mysql:8.0 is hard-coded in the manifest.
+manifest_images:
+  IMAGE_WEB: sqli-demo-web
+
+# Init SQL mounted as a ConfigMap into /docker-entrypoint-initdb.d (optional per exercise).
+init_sql: init.sql
+
 entrypoint_service: sqli-web      # the target the student attacks (http://sqli-web)
 ports:
   - { service: sqli-web, port: 80, proto: http }

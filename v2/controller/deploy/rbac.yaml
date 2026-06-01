@@ -1,0 +1,44 @@
+# ServiceAccount + permissions for the controller to manage per-student lab slices.
+# Scoped to exactly the resource kinds the templates create.
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: slh-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: slh-controller
+  namespace: slh-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: slh-controller
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch", "create", "delete", "patch"]
+  - apiGroups: [""]
+    resources: ["resourcequotas", "limitranges", "configmaps", "services", "pods"]
+    verbs: ["get", "list", "watch", "create", "delete", "patch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "create", "delete", "patch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["networkpolicies", "ingresses"]
+    verbs: ["get", "list", "watch", "create", "delete", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: slh-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: slh-controller
+subjects:
+  - kind: ServiceAccount
+    name: slh-controller
+    namespace: slh-system

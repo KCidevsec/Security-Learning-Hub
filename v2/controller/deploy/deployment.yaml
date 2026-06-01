@@ -1,0 +1,84 @@
+# Controller Deployment + Service + Ingress.
+# ${CONTROLLER_IMAGE} is filled by deploy/controller-up.sh (default slh/controller:dev).
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: slh-controller
+  namespace: slh-system
+  labels:
+    app: slh-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: slh-controller
+  template:
+    metadata:
+      labels:
+        app: slh-controller
+    spec:
+      serviceAccountName: slh-controller
+      containers:
+        - name: controller
+          image: ${CONTROLLER_IMAGE}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: SLH_SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: slh-controller
+                  key: session-secret
+            - name: SLH_BOOTSTRAP_USERS
+              valueFrom:
+                secretKeyRef:
+                  name: slh-controller
+                  key: bootstrap-users
+            - name: SLH_REGISTRY
+              value: "${SLH_REGISTRY}"
+            - name: SLH_TAG
+              value: "${SLH_TAG}"
+            - name: SLH_IDLE_TIMEOUT_MIN
+              value: "${SLH_IDLE_TIMEOUT_MIN}"
+          readinessProbe:
+            httpGet: { path: /healthz, port: 8000 }
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests: { cpu: "100m", memory: "192Mi" }
+            limits:   { cpu: "1",    memory: "512Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: slh-controller
+  namespace: slh-system
+spec:
+  selector:
+    app: slh-controller
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: slh-controller
+  namespace: slh-system
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+    - host: ${CONTROLLER_HOST}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: slh-controller
+                port:
+                  number: 80

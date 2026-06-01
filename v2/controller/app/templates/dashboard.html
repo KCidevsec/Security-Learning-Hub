@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Learning Hub — Dashboard</title>
+  <style>
+    * { box-sizing:border-box; }
+    body { font-family:'Segoe UI',system-ui,sans-serif; margin:0; background:#f1f5f9; color:#0f172a; }
+    header { background:#1e3a8a; color:#fff; padding:14px 24px; display:flex;
+             justify-content:space-between; align-items:center; }
+    header h1 { font-size:17px; margin:0; }
+    header form { margin:0; }
+    header button { background:#1d4ed8; color:#fff; border:0; padding:7px 14px;
+                    border-radius:6px; cursor:pointer; }
+    .wrap { max-width:1100px; margin:22px auto; padding:0 18px;
+            display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+    .panel { background:#fff; border-radius:10px; padding:18px 20px;
+             box-shadow:0 1px 4px rgba(0,0,0,.08); }
+    .panel h2 { font-size:15px; margin:0 0 12px; color:#1e3a8a; }
+    .ex { border:1px solid #e2e8f0; border-radius:8px; padding:12px 14px; margin-bottom:12px; }
+    .ex h3 { margin:0 0 4px; font-size:14px; }
+    .ex p { margin:0 0 10px; font-size:12px; color:#475569; }
+    .tag { display:inline-block; font-size:10px; padding:2px 7px; border-radius:10px;
+           background:#e0e7ff; color:#3730a3; margin-right:5px; }
+    .tag.warn { background:#fef3c7; color:#92400e; }
+    button.go { background:#1e3a8a; color:#fff; border:0; padding:8px 14px;
+                border-radius:6px; cursor:pointer; font-size:13px; }
+    button.stop { background:#b91c1c; }
+    button.reset { background:#0369a1; }
+    .status { font-size:13px; }
+    .status .dot { display:inline-block; width:9px; height:9px; border-radius:50%;
+                   margin-right:6px; }
+    .ready { background:#16a34a; } .pending { background:#f59e0b; } .off { background:#94a3b8; }
+    iframe { width:100%; height:460px; border:1px solid #cbd5e1; border-radius:8px; background:#000; }
+    .full { grid-column:1 / -1; }
+    code { background:#f1f5f9; padding:1px 5px; border-radius:4px; font-size:12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🛡️ Security Learning Hub <span style="opacity:.7;font-weight:400">— {{ user }}</span></h1>
+    <form method="post" action="/logout"><button>Sign out</button></form>
+  </header>
+
+  <div class="wrap">
+    <div class="panel">
+      <h2>Exercises</h2>
+      {% for ex in exercises %}
+      <div class="ex">
+        <h3>{{ ex.title }}</h3>
+        <p>{{ ex.summary }}</p>
+        <span class="tag">{{ ex.category }}</span>
+        {% if ex.emulated_on_apple_silicon %}<span class="tag warn">emulated on Apple Silicon</span>{% endif %}
+        <form method="post" action="/lab/start" style="display:inline; margin-left:8px;">
+          <input type="hidden" name="exercise" value="{{ ex.id }}">
+          <button class="go" type="submit">Start</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="panel">
+      <h2>My Lab</h2>
+      <div class="status">
+        {% if status.running %}
+          <p>
+            {% if status.ready %}<span class="dot ready"></span>Running{% else %}<span class="dot pending"></span>Starting…{% endif %}
+            — exercise <code>{{ status.exercise }}</code>
+          </p>
+          <ul>
+            {% for w in status.workloads %}
+            <li>{{ w.name }}: {{ w.ready }}/{{ w.desired }} ready</li>
+            {% endfor %}
+          </ul>
+          <form method="post" action="/lab/reset" style="display:inline;">
+            <button class="go reset" type="submit">Reset</button></form>
+          <form method="post" action="/lab/stop" style="display:inline;">
+            <button class="go stop" type="submit">Stop</button></form>
+        {% else %}
+          <p><span class="dot off"></span>No lab running. Pick an exercise to start.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if status.running %}
+    <div class="panel full">
+      <h2>Kali Shell</h2>
+      {% if status.ready %}
+        <iframe src="{{ shell_path }}/" title="Kali shell"></iframe>
+      {% else %}
+        <p>Shell will appear once the lab is ready. <a href="/dashboard">Refresh</a>.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html>
