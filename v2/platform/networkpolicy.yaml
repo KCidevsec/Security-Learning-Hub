@@ -53,3 +53,40 @@ spec:
       ports:
         - protocol: TCP
           port: 7681
+---
+# Egress isolation: default-deny all egress, then allow ONLY intra-namespace traffic and
+# DNS. This stops a compromised target pod from pivoting OUT to other tenants or calling
+# home over the internet, while keeping Kali <-> its own targets and name resolution working.
+# (Image pulls happen at the kubelet/node level and are unaffected by pod egress policy.)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: ${STUDENT_NS}
+spec:
+  podSelector: {}
+  policyTypes: ["Egress"]
+  # no egress rules => deny all egress by default
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-intra-ns-and-dns
+  namespace: ${STUDENT_NS}
+spec:
+  podSelector: {}
+  policyTypes: ["Egress"]
+  egress:
+    # to any pod in THIS namespace (Kali -> its targets)
+    - to:
+        - podSelector: {}
+    # to CoreDNS in kube-system for name resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

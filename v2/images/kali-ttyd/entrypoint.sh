@@ -28,5 +28,10 @@ TTYD_ARGS=(--writable --port "${TTYD_PORT}" --terminal-type xterm-256color)
 if [[ -n "${TTYD_CREDENTIAL:-}" ]]; then
     TTYD_ARGS+=(--credential "${TTYD_CREDENTIAL}")
 fi
+# When served behind the controller's reverse proxy under a sub-path (e.g. /shell), ttyd
+# must emit asset/token/ws URLs under that base path. Left empty for direct/port-forward.
+if [[ -n "${TTYD_BASE_PATH:-}" ]]; then
+    TTYD_ARGS+=(--base-path "${TTYD_BASE_PATH}")
+fi
 
 exec ttyd "${TTYD_ARGS[@]}" bash -l

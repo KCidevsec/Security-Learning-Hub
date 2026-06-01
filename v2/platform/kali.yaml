@@ -26,6 +26,10 @@ spec:
           env:
             - name: WELCOME_MSG
               value: "Lab: ${STUDENT_NS}. Target this exercise at http://sqli-web"
+            # Empty for direct/port-forward access; the controller sets this to "/shell"
+            # so ttyd emits correct URLs behind the reverse proxy.
+            - name: TTYD_BASE_PATH
+              value: "${TTYD_BASE_PATH}"
           volumeMounts:
             - name: share
               mountPath: /root/kali_share_folder

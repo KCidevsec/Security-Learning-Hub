@@ -14,6 +14,7 @@ render() {
       -e "s|\${KALI_IMAGE}|${KALI_IMAGE}|g" \
       -e "s|\${IMAGE_WEB}|${IMAGE_WEB}|g" \
       -e "s|\${INGRESS_HOST}|${INGRESS_HOST}|g" \
+      -e "s|\${TTYD_BASE_PATH}|${TTYD_BASE_PATH:-}|g" \
       "$1"
 }
 
