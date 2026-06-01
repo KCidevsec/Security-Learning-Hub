@@ -1,0 +1,33 @@
+# Exercise descriptor — consumed later by the controller (Phase 2) to render the catalogue
+# and decide scheduling/arch handling. Hand-maintained for now.
+id: sqli-demo
+title: "SQL Injection — University of Nicosia"
+category: web
+summary: >
+  Intentionally vulnerable PHP/MySQL app. Students go from basic SQLi to UNION-based
+  data exfiltration to a webshell via INTO OUTFILE, demonstrating SQLi + FILE privilege
+  + permissive web root = full compromise.
+
+# Architecture support. amd64 is the canonical validation arch.
+arch:
+  amd64: native          # validated target (mini PC / cloud)
+  arm64: native          # php:8.1-apache and mysql:8.0 both publish arm64 — no emulation
+emulated_on_apple_silicon: false
+
+images:
+  - name: sqli-demo-web
+    context: images/web
+    # mysql:8.0 is used stock (multi-arch upstream) — not built here.
+
+entrypoint_service: sqli-web      # the target the student attacks (http://sqli-web)
+ports:
+  - { service: sqli-web, port: 80, proto: http }
+
+flag: "FLAG{sql_injection_master}"
+
+objectives:
+  - Identify SQL injection in an unsanitised parameter
+  - UNION-based extraction (VERSION/DATABASE/USER, information_schema enumeration)
+  - Time-based blind injection (SLEEP)
+  - Exfiltrate the secrets table (capture the flag)
+  - Drop a webshell via INTO OUTFILE and achieve RCE

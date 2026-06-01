@@ -1,0 +1,36 @@
+# Per-student tenant namespace + resource guard rails.
+# ${STUDENT_NS} is substituted by deploy/slice-up.sh (e.g. lab-student-01).
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${STUDENT_NS}
+  labels:
+    slh.tenant: "true"
+    slh.student: "${STUDENT_NS}"
+---
+# Cap a single student's footprint so one tenant can't starve the box (or, later, the cluster).
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: tenant-quota
+  namespace: ${STUDENT_NS}
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "3"
+    limits.memory: 3Gi
+    pods: "10"
+---
+# Default requests/limits for pods that don't specify them.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: tenant-defaults
+  namespace: ${STUDENT_NS}
+spec:
+  limits:
+    - type: Container
+      default:        { cpu: "500m", memory: 512Mi }
+      defaultRequest: { cpu: "100m", memory: 128Mi }

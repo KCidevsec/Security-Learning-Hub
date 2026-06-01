@@ -1,0 +1,132 @@
+# SQLi exercise — Kubernetes manifest (namespace-agnostic; applied with `-n <student-ns>`).
+#
+# Faithful to the v1 sqli-demo exploit chain:
+#   * vulnerable string-concatenated query in index.php  -> SQLi
+#   * 'dvwa' user granted FILE + --secure-file-priv=/var/www/html
+#   * web (Apache) and db (MySQL) SHARE an emptyDir mounted at /var/www/html
+#   -> `UNION ... INTO OUTFILE '/var/www/html/shell.php'` drops a webshell Apache serves.
+#
+# Placeholders are filled by deploy/slice-up.sh (envsubst):
+#   ${IMAGE_WEB}  e.g. slh/sqli-demo-web:dev (local) or ghcr.io/<owner>/sqli-demo-web:<tag>
+#
+# The init SQL is injected as a ConfigMap created by slice-up.sh from init.sql.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sqli-demo
+  labels:
+    app: sqli-demo
+    slh.exercise: sqli-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sqli-demo
+  template:
+    metadata:
+      labels:
+        app: sqli-demo
+        slh.exercise: sqli-demo
+    spec:
+      # web + db live in ONE pod so they can share the web root volume (localhost DB).
+      initContainers:
+        # Copy the baked app into the shared web root (an emptyDir mount would otherwise
+        # shadow the image's /var/www/html). World-writable so MySQL can drop the webshell.
+        - name: seed-webroot
+          image: ${IMAGE_WEB}
+          command: ["/bin/sh", "-c"]
+          args:
+            - cp -a /opt/app/. /var/www/html/ && chmod -R 0777 /var/www/html
+          volumeMounts:
+            - name: webroot
+              mountPath: /var/www/html
+      containers:
+        - name: web
+          image: ${IMAGE_WEB}
+          ports:
+            - containerPort: 80
+          env:
+            - name: DB_HOST
+              value: "127.0.0.1"   # same pod
+            - name: DB_USER
+              value: "dvwa"
+            - name: DB_PASS
+              value: "p@ssw0rd"
+            - name: DB_NAME
+              value: "dvwa"
+          volumeMounts:
+            - name: webroot
+              mountPath: /var/www/html
+          resources:
+            requests: { cpu: "50m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "256Mi" }
+        - name: db
+          image: mysql:8.0
+          # umask 0002 => OUTFILE-written files are 0664 (world-readable), so Apache can
+          # serve the dropped webshell. secure-file-priv pins OUTFILE to the web root.
+          command: ["bash", "-c"]
+          args:
+            - umask 0002 && exec docker-entrypoint.sh mysqld --secure-file-priv=/var/www/html
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "rootpass"
+            - name: MYSQL_DATABASE
+              value: "dvwa"
+            - name: MYSQL_USER
+              value: "dvwa"
+            - name: MYSQL_PASSWORD
+              value: "p@ssw0rd"
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: webroot
+              mountPath: /var/www/html
+            - name: initdb
+              mountPath: /docker-entrypoint-initdb.d
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "mysqladmin ping -h 127.0.0.1 -uroot -prootpass"]
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 30
+          resources:
+            requests: { cpu: "100m", memory: "384Mi" }
+            limits:   { cpu: "1",    memory: "768Mi" }
+      volumes:
+        - name: webroot
+          emptyDir: {}
+        - name: initdb
+          configMap:
+            name: sqli-demo-initdb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sqli-web
+  labels:
+    app: sqli-demo
+spec:
+  # Reachable from the Kali pod in the same namespace as http://sqli-web
+  selector:
+    app: sqli-demo
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sqli-db
+  labels:
+    app: sqli-demo
+spec:
+  # Convenience for `mysql -h sqli-db` from Kali; web itself uses 127.0.0.1.
+  selector:
+    app: sqli-demo
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: 3306

@@ -1,0 +1,76 @@
+# Kali attacker box + ttyd browser shell for ${STUDENT_NS}.
+# Substituted by deploy/slice-up.sh: ${STUDENT_NS}, ${KALI_IMAGE}, ${INGRESS_HOST}.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kali
+  namespace: ${STUDENT_NS}
+  labels:
+    app: kali
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kali
+  template:
+    metadata:
+      labels:
+        app: kali
+    spec:
+      containers:
+        - name: kali
+          image: ${KALI_IMAGE}
+          ports:
+            - containerPort: 7681
+          env:
+            - name: WELCOME_MSG
+              value: "Lab: ${STUDENT_NS}. Target this exercise at http://sqli-web"
+          volumeMounts:
+            - name: share
+              mountPath: /root/kali_share_folder
+          resources:
+            requests: { cpu: "100m", memory: "256Mi" }
+            limits:   { cpu: "1",    memory: "512Mi" }
+      volumes:
+        # Phase 2: swap for a per-student PVC so the share persists across sessions.
+        - name: share
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kali-shell
+  namespace: ${STUDENT_NS}
+  labels:
+    app: kali
+spec:
+  selector:
+    app: kali
+  ports:
+    - name: ttyd
+      port: 7681
+      targetPort: 7681
+---
+# Real-deployment browser access. For local validation we use `kubectl port-forward`
+# (see `make shell`), which doesn't require this Ingress.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kali-shell
+  namespace: ${STUDENT_NS}
+  annotations:
+    # Phase 2: add auth (forward-auth / basic-auth) here so the shell sits behind login.
+    ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+    - host: ${INGRESS_HOST}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kali-shell
+                port:
+                  number: 7681
