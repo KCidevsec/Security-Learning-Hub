@@ -40,19 +40,35 @@ See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full design and rationale.
 v2/
 ├── README.md                 # this file
 ├── ARCHITECTURE.md           # design + rationale + scaling path
+├── MORNING-REPORT.md         # what was built unattended + what needs your input
 ├── Makefile                  # cluster-up, build, slice-up, slice-down, validate
 ├── images/
 │   └── kali-ttyd/            # attacker box + ttyd browser shell (multi-arch)
 ├── exercises/
-│   └── sqli-demo/            # first ported exercise (k8s manifests + images + src)
+│   ├── sqli-demo/            # SQLi exercise (k8s manifests + images + src)
+│   └── ftp-anon/             # anonymous-FTP exercise (multi-arch vsftpd)
 ├── platform/                 # per-student namespace + NetworkPolicy + Kali pod templates
+├── controller/               # Phase 2 web app: login, lifecycle, shell proxy, culler
+│   ├── app/                  # FastAPI (main, auth, k8s, proxy, culler, exercises)
+│   └── deploy/               # RBAC, Deployment/Service/Ingress, up/down scripts
 ├── deploy/                   # cluster bring-up, multi-arch build/push, binfmt, slice scripts
 └── docs/
     └── arch-compat-matrix.md # which exercises are native-both vs amd64-only (emulated)
 ```
 
-## Quick start (local dev on Apple Silicon)
+## Two ways to run
 
+**Self-service via the controller (Phase 2 — the real UX):**
+```bash
+cd v2
+make cluster-up
+make build                              # build + import all images into the cluster
+./controller/deploy/controller-up.sh    # deploy controller (demo accounts student1/2)
+kubectl port-forward -n slh-system svc/slh-controller 8000:80
+open http://localhost:8000              # log in -> pick an exercise -> in-browser Kali shell
+```
+
+**Manual single slice (Phase 1 — scripted, no controller):**
 ```bash
 cd v2
 make cluster-up        # local k3d cluster (installs k3d if missing)
@@ -67,7 +83,10 @@ make slice-down        # tear the student namespace down
 
 ## Phased plan
 
-- **Phase 0** — registry-backed multi-arch images (kills the local build pain). *in progress*
-- **Phase 1** — vertical slice: one exercise (SQLi) + Kali/ttyd, one student namespace, in-browser. *in progress*
-- **Phase 2** — controller web app (login, start/stop/reset, idle-culling) + multi-tenancy.
-- **Phase 3** — port remaining exercises; load-test concurrency; cost case for AWS.
+- **Phase 0** — registry-backed multi-arch images. *Build path verified for both arches;
+  actual GHCR push needs your `docker login` (see MORNING-REPORT.md).*
+- **Phase 1** — vertical slice: SQLi + Kali/ttyd, one student namespace, in-browser. ✅ **done & verified**
+- **Phase 2** — controller web app: login, start/stop/reset, shell proxy, idle-culling. ✅ **done & verified**
+- **Phase 3** — port remaining exercises (ftp-anon done ✅); load-test concurrency; AWS cost case. *in progress*
+- **Phase 4+** — persistence (PVC), security front-door/TLS, scale to EKS, instructor tools.
+  See ARCHITECTURE.md / MORNING-REPORT.md.
