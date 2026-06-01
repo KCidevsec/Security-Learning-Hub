@@ -143,6 +143,9 @@ def status(username: str) -> dict:
         if e.status == 404:
             return {"running": False, "namespace": ns_name}
         raise
+    # A namespace mid-deletion still reads back briefly — treat it as not running.
+    if ns.metadata.deletion_timestamp is not None:
+        return {"running": False, "namespace": ns_name, "terminating": True}
     annos = (ns.metadata.annotations or {})
     deploys = client.AppsV1Api().list_namespaced_deployment(ns_name).items
     workloads = [{

@@ -154,6 +154,7 @@ async def shell_http(request: Request, path: str = ""):
     if not st.get("running"):
         return Response("Lab not running. Start it from the dashboard.", status_code=409)
     k8s.touch_activity(user)
-    base = config.SHELL_BASE_PATH.lstrip("/")
-    upstream_path = f"{base}/{path}" if path else base
+    # Proxy to the SAME path upstream (ttyd's base-path matches), preserving any trailing
+    # slash so ttyd doesn't 302 /shell -> /shell/.
+    upstream_path = request.url.path.lstrip("/")
     return await proxy.http_proxy(request, st["namespace"], upstream_path)
