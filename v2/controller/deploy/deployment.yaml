@@ -72,8 +72,9 @@ metadata:
     ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
-    - host: ${CONTROLLER_HOST}
-      http:
+    # No host match: any host (so plain http://localhost:8080 works in local dev).
+    # For a real deployment behind a domain, add `host: <fqdn>` back here.
+    - http:
         paths:
           - path: /
             pathType: Prefix

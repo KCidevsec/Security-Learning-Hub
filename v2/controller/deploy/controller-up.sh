@@ -10,7 +10,6 @@ CONTROLLER_IMAGE="${CONTROLLER_IMAGE:-slh/controller:dev}"
 SLH_REGISTRY="${SLH_REGISTRY:-slh}"
 SLH_TAG="${SLH_TAG:-dev}"
 SLH_IDLE_TIMEOUT_MIN="${SLH_IDLE_TIMEOUT_MIN:-60}"
-CONTROLLER_HOST="${CONTROLLER_HOST:-hub.localhost}"
 BOOTSTRAP_USERS="${BOOTSTRAP_USERS:-student1:labpass1,student2:labpass2}"
 
 echo "[*] Building ${CONTROLLER_IMAGE} (context=${V2_DIR})..."
@@ -34,7 +33,6 @@ sed -e "s|\${CONTROLLER_IMAGE}|${CONTROLLER_IMAGE}|g" \
     -e "s|\${SLH_REGISTRY}|${SLH_REGISTRY}|g" \
     -e "s|\${SLH_TAG}|${SLH_TAG}|g" \
     -e "s|\${SLH_IDLE_TIMEOUT_MIN}|${SLH_IDLE_TIMEOUT_MIN}|g" \
-    -e "s|\${CONTROLLER_HOST}|${CONTROLLER_HOST}|g" \
     "${V2_DIR}/controller/deploy/deployment.yaml" | "$KUBECTL" apply -f -
 
 "$KUBECTL" rollout status deploy/slh-controller -n slh-system --timeout=120s

@@ -64,9 +64,11 @@ cd v2
 make cluster-up
 make build                              # build + import all images into the cluster
 ./controller/deploy/controller-up.sh    # deploy controller (demo accounts student1/2)
-kubectl port-forward -n slh-system svc/slh-controller 8000:80
-open http://localhost:8000              # log in -> pick an exercise -> in-browser Kali shell
+open http://localhost:8080              # log in -> pick an exercise -> in-browser Kali shell
 ```
+(k3d publishes Traefik on `localhost:8080`; the controller Ingress has no host match, so
+`http://localhost:8080` routes straight to it. `kubectl port-forward -n slh-system
+svc/slh-controller 8000:80` is an alternative.)
 
 **Manual single slice (Phase 1 — scripted, no controller):**
 ```bash
